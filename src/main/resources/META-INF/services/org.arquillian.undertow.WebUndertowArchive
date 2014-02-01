@@ -1,0 +1,2 @@
+implementingClassName=org.arquillian.undertow.WebUndertowArchive
+extension=.war
