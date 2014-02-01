@@ -66,7 +66,7 @@ public class EmbeddedUndertowContainer implements
 							.getContextPath()));
 		}
 
-		return new ProtocolMetaData().addContext(null);
+		return new ProtocolMetaData().addContext(httpContext);
 	}
 
 	public void deploy(Descriptor descriptor) throws DeploymentException {

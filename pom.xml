@@ -71,12 +71,6 @@
 			<groupId>org.jboss.arquillian.container</groupId>
 			<artifactId>arquillian-container-test-spi</artifactId>
 		</dependency>
-		<!-- For @Resource annotations -->
-		<dependency>
-			<groupId>org.jboss.arquillian.testenricher</groupId>
-			<artifactId>arquillian-testenricher-resource</artifactId>
-		</dependency>
-
 		<!-- For @ArquillianResource annotated InitialContext injection points -->
 		<dependency>
 			<groupId>org.jboss.arquillian.testenricher</groupId>

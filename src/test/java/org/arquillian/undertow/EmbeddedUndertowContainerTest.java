@@ -24,10 +24,9 @@ public class EmbeddedUndertowContainerTest {
 						"test.war").setClassLoader(EmbeddedUndertowContainerTest.class.getClassLoader()).addServlet(servlet("MessageServlet", MessageServlet.class).addMapping("/messageservlet")));
 	}
 
-	@ArquillianResource URL url;
 	
 	@Test
-	public void shouldBeAbleToInvokeServletInDeployedWebApp() throws Exception {
+	public void shouldBeAbleToInvokeServletInDeployedWebApp(@ArquillianResource URL url) throws Exception {
 
 		System.out.println(url);
 
