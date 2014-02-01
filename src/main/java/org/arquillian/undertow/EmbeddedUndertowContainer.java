@@ -6,12 +6,15 @@ import java.util.Collection;
 import java.util.Map;
 
 import io.undertow.Undertow;
+import io.undertow.server.HttpHandler;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.api.ServletInfo;
 
 import javax.servlet.ServletException;
 
+import org.arquillian.undertow.shrinkwrap.UndertowHttpHandlerArchive;
+import org.arquillian.undertow.shrinkwrap.UndertowWebArchive;
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
@@ -26,29 +29,48 @@ public class EmbeddedUndertowContainer implements
 		DeployableContainer<UndertowContainerConfiguration> {
 
 	private Undertow undertow;
-	private DeploymentManager deploymentManager;
 	private UndertowContainerConfiguration configuration;
 
 	public ProtocolMetaData deploy(Archive<?> archive)
 			throws DeploymentException {
 
-		// TODO instance of check
-		WebUndertowArchive servletBuilder = (WebUndertowArchive) archive;
+		HTTPContext httpContext = null;
+		
+		if(archive instanceof UndertowWebArchive) {
+			httpContext = registerDeploymentInfo(archive);
+		} else{
+			if(archive instanceof UndertowHttpHandlerArchive) {
+				httpContext = registerHandler(archive);
+			}
+		}
+		
+		return new ProtocolMetaData().addContext(httpContext);
+	}
+
+	private HTTPContext registerHandler(Archive<?> archive) {
+		
+		UndertowHttpHandlerArchive handler = (UndertowHttpHandlerArchive)archive;
+		this.undertow = createUndertow(handler.getHttpHandler());
+		this.undertow.start();
+		
+		HTTPContext httpContext = new HTTPContext(
+				configuration.getBindAddress(), configuration.getBindHttpPort());
+		
+		return httpContext;
+	}
+
+	private HTTPContext registerDeploymentInfo(Archive<?> archive) {
+		UndertowWebArchive servletBuilder = (UndertowWebArchive) archive;
 
 		final DeploymentInfo deploymentInfo = servletBuilder
 				.getDeploymentInfo();
-		this.deploymentManager = defaultContainer().addDeployment(
+		DeploymentManager deploymentManager = defaultContainer().addDeployment(
 				deploymentInfo);
-		this.deploymentManager.deploy();
+		deploymentManager.deploy();
 
 		try {
-			this.undertow = Undertow
-					.builder()
-					.setHandler(this.deploymentManager.start())
-					.addHttpListener(configuration.getBindHttpPort(),
-							configuration.getBindAddress()).build();
+			this.undertow = createUndertow(deploymentManager.start());
 			this.undertow.start();
-
 		} catch (ServletException e) {
 			throw new IllegalArgumentException(e);
 		}
@@ -62,13 +84,22 @@ public class EmbeddedUndertowContainer implements
 
 		for (ServletInfo servletInfo : servletsInfo) {
 			httpContext.add(new Servlet(servletInfo.getName(),
-					this.deploymentManager.getDeployment().getDeploymentInfo()
+					deploymentManager.getDeployment().getDeploymentInfo()
 							.getContextPath()));
 		}
-
-		return new ProtocolMetaData().addContext(httpContext);
+		return httpContext;
 	}
 
+	private Undertow createUndertow(HttpHandler handler) {
+		return Undertow
+		.builder()
+		.setHandler(handler)
+		.addHttpListener(configuration.getBindHttpPort(),
+				configuration.getBindAddress()).build();
+	}
+	
+	
+	
 	public void deploy(Descriptor descriptor) throws DeploymentException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
@@ -95,11 +126,6 @@ public class EmbeddedUndertowContainer implements
 	}
 
 	public void undeploy(Archive<?> archive) throws DeploymentException {
-		try {
-			deploymentManager.stop();
-		} catch (ServletException e) {
-			throw new IllegalArgumentException(e);
-		}
 	}
 
 	public void undeploy(Descriptor descriptor) throws DeploymentException {

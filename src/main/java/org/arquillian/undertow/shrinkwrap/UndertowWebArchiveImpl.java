@@ -1,4 +1,4 @@
-package org.arquillian.undertow;
+package org.arquillian.undertow.shrinkwrap;
 
 import io.undertow.servlet.api.DeploymentInfo;
 
@@ -20,15 +20,14 @@ import org.jboss.shrinkwrap.api.exporter.StreamExporter;
 import org.jboss.shrinkwrap.api.formatter.Formatter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-public class WebUndertowArchive implements Archive<WebArchive> {
+public class UndertowWebArchiveImpl implements UndertowWebArchive {
 
 	private DeploymentInfo deploymentInfo;
 	private Archive<?> archive;
 	
-	public WebUndertowArchive(Archive<?> archive) {
+	public UndertowWebArchiveImpl(Archive<?> archive) {
 		this.archive = archive;
 	}
-	
 	
 	@Override
 	public String getName() {
@@ -236,14 +235,12 @@ public class WebUndertowArchive implements Archive<WebArchive> {
 
 	@Override
 	public String toString(boolean verbose) {
-		// TODO Auto-generated method stub
-		return null;
+		return this.deploymentInfo.toString();
 	}
 
 	@Override
 	public String toString(Formatter formatter) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
+		return this.toString(true);
 	}
 
 	@Override
@@ -262,11 +259,13 @@ public class WebUndertowArchive implements Archive<WebArchive> {
 		throw new UnsupportedOperationException("Operation not supported for Undertow Archive.");
 	}
 
-	public WebUndertowArchive from(DeploymentInfo deployment) {
+	@Override
+	public UndertowWebArchive from(DeploymentInfo deployment) {
 		this.deploymentInfo = deployment;
 		return this;
 	}
 
+	@Override
 	public DeploymentInfo getDeploymentInfo() {
 		return deploymentInfo;
 	}

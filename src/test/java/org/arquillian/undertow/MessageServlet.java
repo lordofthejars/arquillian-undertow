@@ -11,12 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class MessageServlet extends HttpServlet {
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
-	public static final String MESSAGE = "message";
+    private static final String MESSAGE = "message";
 
     private String message;
 

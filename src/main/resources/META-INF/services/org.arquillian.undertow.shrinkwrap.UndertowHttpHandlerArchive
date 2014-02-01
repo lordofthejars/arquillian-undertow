@@ -1,0 +1,2 @@
+implementingClassName=org.arquillian.undertow.shrinkwrap.UndertowHttpHandlerArchiveImpl
+extension=.jar
